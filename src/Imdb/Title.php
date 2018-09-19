@@ -2364,10 +2364,6 @@ class Title extends MdbBase {
     return $this->jsonLD;
   }
 
-    /** Get the quotes for a given movie
-     * @return array quotes (array[0..n] of string)
-     * @see IMDB page /quotes
-     */
     public function mediaIndex()
     {
         if (!empty($this->mediaIndex) ) {
@@ -2377,8 +2373,6 @@ class Title extends MdbBase {
         if (empty($page)) {
             return array();
         }
-        //$regex = '!<a\s+href="(?<url>/title/tt\d{7}/mediaviewer/[A-Za-z]{2}[0-9]{0,9})[^"]+"\s*title="(?<mediatitle>[^"]+)"!ims';
-
         preg_match('!<div .*?id="media_index_thumbnail_grid">\s*(.*?)\s*</div>!ims', $page,$matchMedia);
 
         $regex = '!<img.*?alt="(?<text>[^"]+)".*?src="(?<imgsrc>.*?)".*?/>!ims';
@@ -2393,9 +2387,8 @@ class Title extends MdbBase {
                 $ext = substr($img,-3);
                 $mediaIndex[$key]["bigsrc"] = $big[1].".${ext}";
             }
-            var_dump($mediaIndex);die;
-            $this->mediaIndex[] = $mediaIndex;
         }
+        $this->mediaIndex = $mediaIndex;
         return $this->mediaIndex;
     }
 }
