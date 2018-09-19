@@ -32,6 +32,8 @@ class Title extends MdbBase {
   const VIDEO = 'Video';
   const SHORT = 'Short';
 
+  const MEDIA_INDEX = 'MediaIndex';
+
   protected $akas = array();
   protected $awards = array();
   protected $countries = array();
@@ -114,6 +116,7 @@ class Title extends MdbBase {
   protected $episodeSeason = null;
   protected $episodeEpisode = null;
   protected $jsonLD = null;
+  protected $mediaIndex = null;
 
   protected $pageUrls = array(
       "AlternateVersions" => '/alternateversions',
@@ -126,6 +129,7 @@ class Title extends MdbBase {
       "Goofs" => "/trivia?tab=gf",
       "Keywords" => "/keywords",
       "Locations" => "/locations",
+       self::MEDIA_INDEX => "/mediaindex",
       "MovieConnections" => "/movieconnections",
       "OfficialSites" => "/officialsites",
       "ParentalGuide" => "/parentalguide",
@@ -2360,4 +2364,38 @@ class Title extends MdbBase {
     return $this->jsonLD;
   }
 
+    /** Get the quotes for a given movie
+     * @return array quotes (array[0..n] of string)
+     * @see IMDB page /quotes
+     */
+    public function mediaIndex()
+    {
+        if (!empty($this->mediaIndex) ) {
+            return $this->mediaIndex;
+        }
+        $page = $this->getPage(self::MEDIA_INDEX);
+        if (empty($page)) {
+            return array();
+        }
+        //$regex = '!<a\s+href="(?<url>/title/tt\d{7}/mediaviewer/[A-Za-z]{2}[0-9]{0,9})[^"]+"\s*title="(?<mediatitle>[^"]+)"!ims';
+
+        preg_match('!<div .*?id="media_index_thumbnail_grid">\s*(.*?)\s*</div>!ims', $page,$matchMedia);
+
+        $regex = '!<img.*?alt="(?<text>[^"]+)".*?src="(?<imgsrc>.*?)".*?/>!ims';
+        if (preg_match_all($regex, $matchMedia[1], $matches)) {
+            $mediaIndex = [];
+            foreach ($matches['text'] as $key => $text) {
+                $mediaIndex[$key]["text"] = $text;
+            }
+
+            foreach ($matches['imgsrc'] as $key => $img) {
+                preg_match('|(.*\._V1).*|iUs', $img,$big);
+                $ext = substr($img,-3);
+                $mediaIndex[$key]["bigsrc"] = $big[1].".${ext}";
+            }
+            var_dump($mediaIndex);die;
+            $this->mediaIndex[] = $mediaIndex;
+        }
+        return $this->mediaIndex;
+    }
 }
